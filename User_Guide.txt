@@ -1,0 +1,98 @@
+USER GUIDE
+
+1. CONFIGURE THE ENVIRONMENT
+
+Before running the application, create a .env file in the project root directory and add your Google Gemini API key.
+
+Example:
+
+GOOGLE_API_KEY=your_google_api_key_here
+
+Use the .env file to provide API Key
+
+
+2. ACTIVATE THE VIRTUAL ENVIRONMENT
+
+Activate the virtual environment before running the application.
+
+For Windows:
+
+venv\Scripts\activate
+
+
+3. INSTALL THE REQUIRED DEPENDENCIES
+
+Install all required Python packages using:
+
+pip install -r requirements.txt
+
+
+4. START THE APPLICATION
+
+Run the Streamlit application using:
+
+streamlit run app.py
+
+The application will open in a web browser.
+
+
+5. UPLOAD DOCUMENTS
+
+Use the document upload section to upload one or more documents.
+
+The application currently supports the following file formats:
+
+PDF
+TXT
+CSV
+XLSX
+
+The application validates:
+
+Supported file types
+Empty files
+Maximum file size
+Duplicate files
+
+After successful validation, the uploaded document is:
+
+Saved to the application
+Loaded and processed
+Cleaned
+Split into smaller chunks
+Converted into embeddings
+Stored in the vector database
+
+A success message will be displayed after the document has been successfully uploaded and processed.
+
+
+6. ASK QUESTIONS
+
+After uploading and processing the documents, enter your question in the chat interface.
+
+The application will:
+
+Validate the user query
+Apply rate limiting
+Check for potential prompt injection
+Create a retrieval plan
+Retrieve relevant document chunks using semantic search
+Build context from the retrieved information
+Use the LLM to generate a grounded response
+Validate the generated response
+
+The answer will be displayed in the application and added to the chat history.
+
+
+7. RESET THE CHAT
+
+Use the Reset Chat button to clear the current chat history.
+
+This clears the displayed conversation history. The uploaded documents and vector data remain available.
+
+
+8. IMPORTANT NOTE
+
+The application is designed to answer questions using information retrieved from the uploaded documents.
+
+If relevant information is not available in the uploaded documents, the application may indicate that the requested information could not be found.

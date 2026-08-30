@@ -4,12 +4,19 @@ __pycache__/
 
 # Virtual Environment
 venv/
+.venv/
 
-# Environment Variables
+# Environment Variables and API Keys
 .env
+.env.*
+!.env.example
+
+# Allow the example environment file
+!.env.example
 
 # Logs
 logs/
+*.log
 
 # Vector Database
 data/vectordb/

@@ -10,7 +10,7 @@ class Settings:
 
     MODEL_NAME = os.getenv(
         "MODEL_NAME",
-        "gemini-3.6-flash"
+        "gemini-3.7-flash"
     )
 
     EMBEDDING_MODEL = os.getenv(
