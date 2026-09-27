@@ -1,0 +1,218 @@
+[1mdiff --git a/app.py b/app.py[m
+[1mindex c860fe4..c871f19 100644[m
+[1m--- a/app.py[m
+[1m+++ b/app.py[m
+[36m@@ -5,18 +5,22 @@[m [mfrom dotenv import load_dotenv[m
+ from loguru import logger[m
+ [m
+ from src.agents.orchestrator import AgentOrchestrator[m
+[31m-from src.security.rate_limiter import RateLimiter[m
+[32m+[m[32mfrom src.chunking.chunk_manager import generate_chunks[m
+[32m+[m[32mfrom src.embeddings.embedding_service import create_embedding[m
+[32m+[m[32mfrom src.ingestion.document_cleaner import clean_text[m
+[32m+[m[32mfrom src.ingestion.document_loader import load_document[m
+[32m+[m[32mfrom src.security.input_guard import validate_user_query[m
+ from src.security.prompt_guard import detect_prompt_injection[m
+[32m+[m[32mfrom src.security.rate_limiter import RateLimiter[m
+ from src.services.file_service import upload_files[m
+ from src.ui.chat import chat_interface[m
+ from src.ui.sidebar import render_sidebar[m
+ from src.ui.uploader import upload_documents[m
+[31m-from src.ingestion.document_loader import load_document[m
+[31m-from src.ingestion.document_cleaner import clean_text[m
+[31m-from src.chunking.chunk_manager import generate_chunks[m
+[31m-from src.embeddings.embedding_service import create_embedding[m
+ from src.vectorstore.vector_service import store_chunks[m
+[31m-from src.security.input_guard import validate_user_query[m
+[32m+[m[32mfrom src.voice.input_normalizer import normalize_voice_input[m
+[32m+[m[32mfrom src.voice.speech_to_text import transcribe_audio[m
+[32m+[m[32mfrom src.voice.text_to_speech import generate_speech[m
+[32m+[m[32mfrom src.voice.intent_classifier import classify_intent[m
+ [m
+ [m
+ # --------------------------------------------------[m
+[36m@@ -41,17 +45,6 @@[m [mlogger.add([m
+ )[m
+ [m
+ [m
+[31m-# --------------------------------------------------[m
+[31m-# Application Services[m
+[31m-# --------------------------------------------------[m
+[31m-[m
+[31m-orchestrator = AgentOrchestrator()[m
+[31m-limiter = RateLimiter()[m
+[31m-[m
+[31m-if "processed_files" not in st.session_state:[m
+[31m-    st.session_state["processed_files"] = set()[m
+[31m-[m
+[31m-[m
+ # --------------------------------------------------[m
+ # Streamlit Page Configuration[m
+ # --------------------------------------------------[m
+[36m@@ -65,25 +58,109 @@[m [mst.set_page_config([m
+ [m
+ [m
+ # --------------------------------------------------[m
+[31m-# Application Header[m
+[32m+[m[32m# Voice Mode Styling[m
+ # --------------------------------------------------[m
+ [m
+[31m-st.title("Enterprise RAG Agent")[m
+[31m-[m
+ st.markdown([m
+     """[m
+[31m-    Upload your documents and ask questions regarding their content.[m
+[31m-    """[m
+[32m+[m[32m    <style>[m
+[32m+[m[32m    .voice-header {[m
+[32m+[m[32m        text-align: center;[m
+[32m+[m[32m        padding: 20px 0 10px 0;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .voice-header h1 {[m
+[32m+[m[32m        font-size: 42px;[m
+[32m+[m[32m        margin-bottom: 4px;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .voice-header p {[m
+[32m+[m[32m        font-size: 17px;[m
+[32m+[m[32m        opacity: 0.70;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .voice-card {[m
+[32m+[m[32m        max-width: 700px;[m
+[32m+[m[32m        margin: 28px auto 24px auto;[m
+[32m+[m[32m        padding: 42px 30px;[m
+[32m+[m[32m        border-radius: 28px;[m
+[32m+[m[32m        text-align: center;[m
+[32m+[m[32m        background: rgba(255, 255, 255, 0.045);[m
+[32m+[m[32m        border: 1px solid rgba(255, 255, 255, 0.10);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .voice-icon {[m
+[32m+[m[32m        font-size: 72px;[m
+[32m+[m[32m        line-height: 1;[m
+[32m+[m[32m        margin-bottom: 18px;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .voice-status {[m
+[32m+[m[32m        font-size: 25px;[m
+[32m+[m[32m        font-weight: 600;[m
+[32m+[m[32m        margin-bottom: 8px;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .voice-subtitle {[m
+[32m+[m[32m        font-size: 16px;[m
+[32m+[m[32m        opacity: 0.65;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .voice-user {[m
+[32m+[m[32m        padding: 16px 20px;[m
+[32m+[m[32m        border-radius: 16px;[m
+[32m+[m[32m        margin-top: 18px;[m
+[32m+[m[32m        background: rgba(30, 100, 180, 0.18);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .voice-assistant {[m
+[32m+[m[32m        padding: 20px;[m
+[32m+[m[32m        border-radius: 16px;[m
+[32m+[m[32m        margin-top: 12px;[m
+[32m+[m[32m        background: rgba(255, 255, 255, 0.055);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .conversation-title {[m
+[32m+[m[32m        margin-top: 30px;[m
+[32m+[m[32m        margin-bottom: 10px;[m
+[32m+[m[32m        font-size: 21px;[m
+[32m+[m[32m        font-weight: 600;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    </style>[m
+[32m+[m[32m    """,[m
+[32m+[m[32m    unsafe_allow_html=True,[m
+ )[m
+ [m
+ [m
+ # --------------------------------------------------[m
+[31m-# Chat History Initialization[m
+[32m+[m[32m# Application Services[m
+ # --------------------------------------------------[m
+ [m
+[32m+[m[32morchestrator = AgentOrchestrator()[m
+[32m+[m[32mlimiter = RateLimiter()[m
+[32m+[m
+[32m+[m[32mif "processed_files" not in st.session_state:[m
+[32m+[m[32m    st.session_state["processed_files"] = set()[m
+[32m+[m
+ if "chat_history" not in st.session_state:[m
+     st.session_state.chat_history = [][m
+ [m
+[32m+[m[32mif "voice_mode" not in st.session_state:[m
+[32m+[m[32m    st.session_state.voice_mode = False[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# --------------------------------------------------[m
+[32m+[m[32m# Application Header[m
+[32m+[m[32m# --------------------------------------------------[m
+[32m+[m
+[32m+[m[32mst.title("Enterprise RAG Agent")[m
+[32m+[m
+[32m+[m[32mst.markdown([m
+[32m+[m[32m    """[m
+[32m+[m[32m    Upload your documents and ask questions regarding their content.[m
+[32m+[m[32m    """[m
+[32m+[m[32m)[m
+[32m+[m
+ [m
+ # --------------------------------------------------[m
+ # Sidebar Configuration[m
+[36m@@ -100,16 +177,12 @@[m [mst.write(f"Current model: {selected_model}")[m
+ [m
+ selected_files = upload_documents()[m
+ [m
+[31m-[m
+ if selected_files:[m
+ [m
+     files_to_process = [[m
+[31m-[m
+[31m-        file for file in selected_files[m
+[31m-[m
+[31m-        if file.name[m
+[31m-        not in st.session_state.processed_files[m
+[31m-[m
+[32m+[m[32m        file[m
+[32m+[m[32m        for file in selected_files[m
+[32m+[m[32m        if file.name not in st.session_state.processed_files[m
+     ][m
+ [m
+     if files_to_process:[m
+[36m@@ -117,13 +190,11 @@[m [mif selected_files:[m
+         try:[m
+ [m
+             logger.info([m
+[31m-                f"Received {len(files_to_process)} "[m
+[31m-                f"new file(s) for upload."[m
+[32m+[m[32m                f"Received {len(files_to_process)} new file(s) "[m
+[32m+[m[32m                "for upload."[m
+             )[m
+ [m
+[31m-            uploaded_files = upload_files([m
+[31m-                files_to_process[m
+[31m-            )[m
+[32m+[m[32m            uploaded_files = upload_files(files_to_process)[m
+ [m
+             if uploaded_files:[m
+ [m
+[36m@@ -135,49 +206,85 @@[m [mif selected_files:[m
+                     )[m
+ [m
+                     # Step 1: Load document[m
+[31m-                    raw_text = load_document([m
+[31m-                        file_path[m
+[32m+[m[32m                    logger.info("STEP 1: Starting document loading")[m
+[32m+[m
+[32m+[m[32m                    raw_text = load_document(file_path)[m
+[32m+[m
+[32m+[m[32m                    logger.info([m
+[32m+[m[32m                        f"STEP 1 COMPLETE: Document loaded "[m
+[32m+[m[32m                        f"({len(raw_text)} characters)"[m
+                     )

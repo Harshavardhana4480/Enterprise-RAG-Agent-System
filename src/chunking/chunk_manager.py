@@ -1,6 +1,6 @@
+from src.chunking.metadata import create_metadata
 from src.chunking.splitter import create_splitter
 from src.chunking.validator import validate_chunk
-from src.chunking.metadata import create_metadata
 
 
 def generate_chunks(text, filename):

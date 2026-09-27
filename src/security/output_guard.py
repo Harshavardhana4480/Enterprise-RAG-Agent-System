@@ -1,9 +1,6 @@
-def validate_response(answer):
+def validate_output(answer: str) -> bool:
 
     if not answer:
         return False
 
-    if len(answer.strip()) == 0:
-        return False
-
-    return True
+    return len(answer.strip()) != 0

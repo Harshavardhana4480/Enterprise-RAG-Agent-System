@@ -2,10 +2,10 @@ from pathlib import Path
 
 from loguru import logger
 
-from src.ingestion.pdf_reader import read_pdf
-from src.ingestion.txt_reader import read_txt
 from src.ingestion.csv_reader import read_csv
 from src.ingestion.excel_reader import read_excel
+from src.ingestion.pdf_reader import read_pdf
+from src.ingestion.txt_reader import read_txt
 
 
 def load_document(file_path: Path) -> str:

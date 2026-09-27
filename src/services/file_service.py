@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from loguru import logger
 import streamlit as st
-
+from loguru import logger
 
 # --------------------------------------------------
 # Upload Folder Configuration

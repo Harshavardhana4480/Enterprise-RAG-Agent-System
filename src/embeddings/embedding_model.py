@@ -1,20 +1,39 @@
-from google import genai
+from openai import OpenAI
+
 from config.settings import settings
 
-class GeminiEmbeddingModel:
+
+class OpenAIEmbeddingModel:
 
     def __init__(self):
-        self.client = genai.Client(
-            api_key=settings.GOOGLE_API_KEY
+        self.client = OpenAI(
+            api_key=settings.OPENAI_API_KEY
         )
+
+    def embed_documents(self, texts: list[str]):
+
+        response = self.client.embeddings.create(
+            model=settings.EMBEDDING_MODEL,
+            input=texts
+        )
+
+        # Keep the original input order
+        return [
+            item.embedding
+            for item in sorted(
+                response.data,
+                key=lambda x: x.index
+            )
+        ]
 
     def embed_query(self, text: str):
 
-        response = self.client.models.embed_content(
+        response = self.client.embeddings.create(
             model=settings.EMBEDDING_MODEL,
-            contents=text
+            input=text
         )
 
-        return response.embeddings[0].values
+        return response.data[0].embedding
 
-embedding_model = GeminiEmbeddingModel()
+
+embedding_model = OpenAIEmbeddingModel()

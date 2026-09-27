@@ -1,10 +1,14 @@
-from src.agents.planner import PlannerAgent
-from src.agents.retriever import RetrieverAgent
-from src.agents.reasoner import ReasoningAgent
-from src.agents.validator import ValidatorAgent
 from loguru import logger
+from unstructured import documents
+
+from src.agents.planner import PlannerAgent
+from src.agents.reasoner import ReasoningAgent
+from src.agents.retriever import RetrieverAgent
+from src.agents.validator import ValidatorAgent
+
 
 class AgentOrchestrator:
+
     def __init__(self):
         self.planner = PlannerAgent()
         self.retriever = RetrieverAgent()
@@ -16,6 +20,7 @@ class AgentOrchestrator:
         logger.info("RAG request started")
 
         logger.info("Planner started")
+
         plan = self.planner.create_plan(question)
 
         documents = self.retriever.retrieve(
@@ -36,6 +41,14 @@ class AgentOrchestrator:
             "Reasoning completed"
         )
 
+        logger.info(
+            f"Generated answer type: {type(answer)}"
+        )
+
+        logger.info(
+            f"Generated answer: {repr(answer)}"
+        )
+
         if not self.validator.validate(answer):
 
             logger.warning(
@@ -49,4 +62,3 @@ class AgentOrchestrator:
         )
 
         return answer
-        

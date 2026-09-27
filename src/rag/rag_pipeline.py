@@ -1,10 +1,10 @@
+from src.rag.llm_service import generate_answer
+from src.rag.prompt_builder import build_prompt
+from src.rag.response_formatter import format_response
+from src.retrieval.context_builder import build_context
 from src.retrieval.query_embedding import generate_query_embedding
 from src.retrieval.retriever import retrieve_documents
-from src.retrieval.context_builder import build_context
-from src.rag.response_formatter import format_response
 
-from src.rag.prompt_builder import build_prompt
-from src.rag.llm_service import generate_answer
 
 def ask_question(question):
     query_embedding = generate_query_embedding(question)
